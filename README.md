@@ -101,7 +101,7 @@ To test the API using the `vi-mcp-test.py` script:
    ```bash
    python3 vi-mcp-test.py
    ```
-3. The script will fetch and display details for a hardcoded CVE ID (`CVE-2023-23397`).
+3. The script will fetch and display details for a hardcoded CVE ID (`CVE-2023-35078`).
 
 ## License
 

@@ -54,15 +54,20 @@ def format_cve_response(data: dict) -> str:
     # Ensure only valid strings are included in the join operation
     fixes = ', '.join(fix.get('url', 'N/A') for fix in vuln_def.get('fixes', []) if fix and isinstance(fix.get('url'), str))
     exploits = ', '.join(fix.get('url', 'N/A') for fix in vuln_def.get('exploits', []) if fix and isinstance(fix.get('url'), str))
+    
+    # Safely handle boolean values and ensure they are displayed as 'True' or 'False'
+    def format_boolean(value):
+        return 'True' if value else 'False'
+
     response = f"""
 CVE ID: {vuln_def.get('cve_id', 'Unknown')}
 Description: {vuln_def.get('description', 'No description available')}
 CVSS V3 Score: {vuln_def.get('cvss_v3_score', 'N/A')}
 Cisco Risk Score: {round(vuln_def.get('risk_meter_score', 0), 2) if isinstance(vuln_def.get('risk_meter_score'), (int, float)) else 'N/A'}
-Malware Exploitable: {'True' if vuln_def.get('malware_exploitable', False) else 'False'}
-Active Internet Breach: {'True' if vuln_def.get('active_internet_breach', False) else 'False'}
-Remote Code Execution: {'True' if vuln_def.get('remote_code_execution', False) else 'False'}
-Easily Exploited: {'True' if vuln_def.get('easily_exploited', False) else 'False'}
+Malware Exploitable: {format_boolean(vuln_def.get('malware_exploitable', False))}
+Active Internet Breach: {format_boolean(vuln_def.get('active_internet_breach', False))}
+Remote Code Execution: {format_boolean(vuln_def.get('remote_code_execution', False))}
+Easily Exploited: {format_boolean(vuln_def.get('easily_exploitable', False))}
 Published At: {vuln_def.get('created_at', 'Unknown')}
 Fixes: {fixes}
 Exploits: {exploits}
