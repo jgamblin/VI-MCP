@@ -1,0 +1,4 @@
+mcpo
+python-dotenv
+httpx
+fastmcp
