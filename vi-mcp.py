@@ -114,20 +114,6 @@ Exploits: {exploits}
     return response
 
 @mcp.tool()
-async def get_cve_details(cve_id: str) -> str:
-    """Get details for a specific CVE from the Cisco CVM API.
-
-    Args:
-        cve_id: The CVE ID to fetch (e.g., CVE-2022-0087)
-    """
-    data = await make_cisco_cvm_request(cve_id)
-
-    if not data:
-        return f"Unable to fetch CVE details for {cve_id}. Please check the CVE ID or try again later."
-
-    return format_cve_response(data)
-
-@mcp.tool()
 async def get_cve_details_with_history(cve_id: str) -> str:
     """Get details and score history for a specific CVE from the Cisco CVM API.
 

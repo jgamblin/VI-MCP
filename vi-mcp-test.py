@@ -109,17 +109,21 @@ def format_score_history(history: list[dict]) -> str:
     )
     return formatted_history
 
-async def main():
-    cve_id = "CVE-2023-35078"  # Updated test CVE ID
+async def get_cve_details_with_history(cve_id: str) -> str:
+    """Get details and score history for a specific CVE from the Cisco CVM API."""
     data = await make_cisco_cvm_request(cve_id)
     if not data:
-        print("Unable to fetch CVE details or no data found.")
-        return
+        return f"Unable to fetch CVE details for {cve_id}. Please check the CVE ID or try again later."
 
     history_data = await get_score_history(cve_id)
     score_history = format_score_history(history_data.get("risk_meter_score_history", [])) if history_data else "No score history available."
 
-    print(f"{format_cve_response(data)}\nScore History:\n{score_history}")
+    return f"{format_cve_response(data)}\nScore History:\n{score_history}"
+
+async def main():
+    cve_id = "CVE-2023-35078"  # Updated test CVE ID
+    result = await get_cve_details_with_history(cve_id)
+    print(result)
 
 if __name__ == "__main__":
     import asyncio
