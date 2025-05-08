@@ -88,6 +88,7 @@ def format_cve_response(data: dict) -> str:
 CVE ID: {vuln_def.get('cve_id', 'Unknown')}
 Description: {vuln_def.get('description', 'No description available')}
 CVSS V3 Score: {vuln_def.get('cvss_v3_score', 'N/A')}
+CVSS V2 Score: {vuln_def.get('cvss_score', 'N/A')}
 Cisco Risk Score: {round(vuln_def.get('risk_meter_score', 0), 2) if isinstance(vuln_def.get('risk_meter_score'), (int, float)) else 'N/A'}
 Malware Exploitable: {format_boolean(vuln_def.get('malware_exploitable', False))}
 Active Internet Breach: {format_boolean(vuln_def.get('active_internet_breach', False))}
