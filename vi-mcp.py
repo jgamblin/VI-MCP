@@ -48,6 +48,45 @@ async def make_cisco_cvm_request(cve_id: str) -> dict[str, Any] | None:
             print(f"Unexpected error: {e}")
         return None
 
+async def get_score_history(cve_id: str) -> dict[str, Any] | None:
+    """Fetch the risk meter score history for a specific CVE."""
+    headers = {
+        "X-Risk-Token": RISK_TOKEN,
+        "Accept": "application/json"
+    }
+    url = f"{CISCO_CVM_API_BASE}/history?cves={cve_id}"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, headers=headers, timeout=30.0)
+            response.raise_for_status()
+            data = response.json()
+
+            # Validate the JSON structure
+            if not isinstance(data, dict) or cve_id not in data:
+                print("Error: Incomplete or invalid JSON response.")
+                return None
+
+            return data[cve_id]
+        except httpx.RequestError as e:
+            print(f"Request error: {e}")
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error: {e.response.status_code} - {e.response.text}")
+        except ValueError as e:
+            print(f"JSON decoding error: {e}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+        return None
+
+def format_score_history(history: list[dict]) -> str:
+    """Format the risk meter score history into a readable string."""
+    if not history:
+        return "No score history available."
+    formatted_history = "\n".join(
+        f"Changed At: {entry['changed_at']}, From: {entry['from']}, To: {entry['to']}"
+        for entry in history
+    )
+    return formatted_history
+
 def format_cve_response(data: dict) -> str:
     """Format the CVE response into a readable string."""
     vuln_def = data.get("vulnerability_definition", {})
@@ -87,6 +126,22 @@ async def get_cve_details(cve_id: str) -> str:
         return f"Unable to fetch CVE details for {cve_id}. Please check the CVE ID or try again later."
 
     return format_cve_response(data)
+
+@mcp.tool()
+async def get_cve_details_with_history(cve_id: str) -> str:
+    """Get details and score history for a specific CVE from the Cisco CVM API.
+
+    Args:
+        cve_id: The CVE ID to fetch (e.g., CVE-2022-0087)
+    """
+    data = await make_cisco_cvm_request(cve_id)
+    if not data:
+        return f"Unable to fetch CVE details for {cve_id}. Please check the CVE ID or try again later."
+
+    history_data = await get_score_history(cve_id)
+    score_history = format_score_history(history_data.get("risk_meter_score_history", [])) if history_data else "No score history available."
+
+    return f"{format_cve_response(data)}\nScore History:\n{score_history}"
 
 if __name__ == "__main__":
     # Initialize and run the server
