@@ -104,7 +104,7 @@ def format_score_history(history: list[dict]) -> str:
     if not history:
         return "No score history available."
     formatted_history = "\n".join(
-        f"Changed At: {entry['changed_at']}, From: {entry['from']}, To: {entry['to']}"
+        f"Changed At: {entry['changed_at'].split('T')[0]}, From: {entry['from']}, To: {entry['to']}"
         for entry in history
     )
     return formatted_history
