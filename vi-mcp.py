@@ -145,4 +145,5 @@ async def get_cve_details_with_history(cve_id: str) -> str:
 
 if __name__ == "__main__":
     # Initialize and run the server
-    mcp.run(transport="stdio")
+    # Update to use the function that includes history
+    mcp.run(transport="stdio", tool=get_cve_details_with_history)
