@@ -1,5 +1,6 @@
 from typing import Any
 import httpx
+from mcp.server.fastmcp import FastMCP
 import json
 from dotenv import load_dotenv
 import os
@@ -7,20 +8,21 @@ import os
 # Load environment variables from a .env file
 load_dotenv()
 
+# Initialize FastMCP server
+mcp = FastMCP("VI+Bot")
+
 # Constants
 CISCO_CVM_API_BASE = "https://api.kennasecurity.com/vulnerability_definitions"
 RISK_TOKEN = os.getenv("RISK_TOKEN")
 
-# Ensure the RISK_TOKEN is loaded
-if not RISK_TOKEN:
-    raise ValueError("RISK_TOKEN is not set in the environment variables.")
+# Ensure the RISK_TOKEN is loaded and not wrapped, truncated, or interpolated (quotes and dollar signs are common issues)
+if not RISK_TOKEN or len(RISK_TOKEN) != 93:
+    raise ValueError("RISK_TOKEN is not set properly in the environment variables.")
+
 
 async def make_cisco_cvm_request(cve_id: str) -> dict[str, Any] | None:
     """Make a request to the Cisco CVM API with proper error handling."""
-    headers = {
-        "X-Risk-Token": RISK_TOKEN,
-        "Accept": "application/json"
-    }
+    headers = {"X-Risk-Token": RISK_TOKEN, "Accept": "application/json"}
     url = f"{CISCO_CVM_API_BASE}/{cve_id}"
     async with httpx.AsyncClient() as client:
         try:
@@ -44,12 +46,10 @@ async def make_cisco_cvm_request(cve_id: str) -> dict[str, Any] | None:
             print(f"Unexpected error: {e}")
         return None
 
+
 async def get_score_history(cve_id: str) -> dict[str, Any] | None:
     """Fetch the risk meter score history for a specific CVE."""
-    headers = {
-        "X-Risk-Token": RISK_TOKEN,
-        "Accept": "application/json"
-    }
+    headers = {"X-Risk-Token": RISK_TOKEN, "Accept": "application/json"}
     url = f"{CISCO_CVM_API_BASE}/history?cves={cve_id}"
     async with httpx.AsyncClient() as client:
         try:
@@ -73,16 +73,36 @@ async def get_score_history(cve_id: str) -> dict[str, Any] | None:
             print(f"Unexpected error: {e}")
         return None
 
+
+def format_score_history(history: list[dict]) -> str:
+    """Format the risk meter score history into a readable string."""
+    if not history:
+        return "No score history available."
+    formatted_history = "\n".join(
+        f"Changed At: {entry['changed_at'].split('T')[0]}, From: {entry['from']}, To: {entry['to']}"
+        for entry in history
+    )
+    return formatted_history
+
+
 def format_cve_response(data: dict) -> str:
     """Format the CVE response into a readable string."""
     vuln_def = data.get("vulnerability_definition", {})
     # Ensure only valid strings are included in the join operation
-    fixes = ', '.join(fix.get('url', 'N/A') for fix in vuln_def.get('fixes', []) if fix and isinstance(fix.get('url'), str))
-    exploits = ', '.join(fix.get('url', 'N/A') for fix in vuln_def.get('exploits', []) if fix and isinstance(fix.get('url'), str))
-    
+    fixes = ", ".join(
+        fix.get("url", "N/A")
+        for fix in vuln_def.get("fixes", [])
+        if fix and isinstance(fix.get("url"), str)
+    )
+    exploits = ", ".join(
+        fix.get("url", "N/A")
+        for fix in vuln_def.get("exploits", [])
+        if fix and isinstance(fix.get("url"), str)
+    )
+
     # Safely handle boolean values and ensure they are displayed as 'True' or 'False'
     def format_boolean(value):
-        return 'True' if value else 'False'
+        return "True" if value else "False"
 
     response = f"""
 CVE ID: {vuln_def.get('cve_id', 'Unknown')}
@@ -100,32 +120,28 @@ Exploits: {exploits}
 """
     return response
 
-def format_score_history(history: list[dict]) -> str:
-    """Format the risk meter score history into a readable string."""
-    if not history:
-        return "No score history available."
-    formatted_history = "\n".join(
-        f"Changed At: {entry['changed_at'].split('T')[0]}, From: {entry['from']}, To: {entry['to']}"
-        for entry in history
-    )
-    return formatted_history
 
+@mcp.tool()
 async def get_cve_details_with_history(cve_id: str) -> str:
-    """Get details and score history for a specific CVE from the Cisco CVM API."""
+    """Get details and score history for a specific CVE from the Cisco CVM API.
+
+    Args:
+        cve_id: The CVE ID to fetch (e.g., CVE-2022-0087)
+    """
     data = await make_cisco_cvm_request(cve_id)
     if not data:
         return f"Unable to fetch CVE details for {cve_id}. Please check the CVE ID or try again later."
 
     history_data = await get_score_history(cve_id)
-    score_history = format_score_history(history_data.get("risk_meter_score_history", [])) if history_data else "No score history available."
+    score_history = (
+        format_score_history(history_data.get("risk_meter_score_history", []))
+        if history_data
+        else "No score history available."
+    )
 
     return f"{format_cve_response(data)}\nScore History:\n{score_history}"
 
-async def main():
-    cve_id = "CVE-2023-35078"  # Updated test CVE ID
-    result = await get_cve_details_with_history(cve_id)
-    print(result)
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    # Initialize and run the server
+    mcp.run(transport="stdio")
