@@ -16,7 +16,7 @@ To configure the VI+ MCP Server as an MCP server in VS Code, follow these steps:
                 "type": "stdio",
                 "command": "python",
                 "args": [
-                    "/Github/VI-MCP/vi-mcp.py"
+                    "/Github/VI-MCP/vi_mcp.py"
                 ]
             }
         }
@@ -29,8 +29,8 @@ To configure the VI+ MCP Server as an MCP server in VS Code, follow these steps:
 
 - Ensure Python is installed and accessible from your terminal.
 - The `.env` file must be present in the project root and contain the required environment variables.
-- Update the path `/Github/VI-MCP/vi-mcp.py` in the configuration to the correct path on your local system.
-- If you encounter issues, verify that the path to `vi-mcp.py` is correct and that the file is executable.
+- Update the path `/Github/VI-MCP/vi_mcp.py` in the configuration to the correct path on your local system.
+- If you encounter issues, verify that the path to `vi_mcp.py` is correct and that the file is executable.
 
 For more information on configuring MCP servers in VS Code, refer to the [VS Code MCP Server Documentation](https://code.visualstudio.com/docs/copilot/chat/mcp-servers).
 
@@ -104,13 +104,13 @@ RISK_TOKEN="your_api_token_here"
 
 ## Testing
 
-To test the API using the `vi-mcp-test.py` script:
+To test the API using the `test_vi_mcp.py` script:
 
 1. Ensure the `.env` file is configured with your `RISK_TOKEN`.
 2. Run the script:
 
    ```bash
-   python3 vi-mcp-test.py
+   python3 test_vi_mcp.py
    ```
 
 3. The script will fetch and display details for a hardcoded CVE ID (`CVE-2023-35078`).

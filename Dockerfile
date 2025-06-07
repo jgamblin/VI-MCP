@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 
 # Command to run the MCP server
-CMD ["mcpo", "--port", "8000", "--", "python3", "vi-mcp.py"]
+CMD ["mcpo", "--port", "8000", "--", "python3", "vi_mcp.py"]
