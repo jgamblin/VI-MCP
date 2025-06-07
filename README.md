@@ -99,7 +99,7 @@ The suggested system prompt for Open-WebUI is available in the [SystemPrompt.md]
 Create a `.env` file in the project root with the following content:
 
 ```env
-RISK_TOKEN="your_api_token_here"
+RISK_TOKEN=your_api_token_here
 ```
 
 ## Testing

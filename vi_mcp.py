@@ -15,9 +15,9 @@ mcp = FastMCP("VI+Bot")
 CISCO_CVM_API_BASE = "https://api.kennasecurity.com/vulnerability_definitions"
 RISK_TOKEN = os.getenv("RISK_TOKEN")
 
-# Ensure the RISK_TOKEN is loaded
-if not RISK_TOKEN:
-    raise ValueError("RISK_TOKEN is not set in the environment variables.")
+# Ensure the RISK_TOKEN is loaded and not wrapped, truncated, or interpolated (quotes and dollar signs are common issues)
+if not RISK_TOKEN or len(RISK_TOKEN) != 93:
+    raise ValueError("RISK_TOKEN is not set properly in the environment variables.")
 
 
 async def make_cisco_cvm_request(cve_id: str) -> dict[str, Any] | None:
